@@ -14,16 +14,133 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      family_members: {
+        Row: {
+          created_at: string
+          family_email: string
+          full_name: string | null
+          id: string
+          owner_id: string
+          relationship: string | null
+        }
+        Insert: {
+          created_at?: string
+          family_email: string
+          full_name?: string | null
+          id?: string
+          owner_id: string
+          relationship?: string | null
+        }
+        Update: {
+          created_at?: string
+          family_email?: string
+          full_name?: string | null
+          id?: string
+          owner_id?: string
+          relationship?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      vault_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          item_type: Database["public"]["Enums"]["item_type"]
+          mime_type: string | null
+          owner_id: string
+          size_bytes: number | null
+          storage_path: string | null
+          title: string
+          transcript: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          item_type: Database["public"]["Enums"]["item_type"]
+          mime_type?: string | null
+          owner_id: string
+          size_bytes?: number | null
+          storage_path?: string | null
+          title: string
+          transcript?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          item_type?: Database["public"]["Enums"]["item_type"]
+          mime_type?: string | null
+          owner_id?: string
+          size_bytes?: number | null
+          storage_path?: string | null
+          title?: string
+          transcript?: string | null
+        }
+        Relationships: []
+      }
+      vault_settings: {
+        Row: {
+          created_at: string
+          inactivity_days: number
+          is_released: boolean
+          last_checkin_at: string
+          memorial_message: string | null
+          owner_id: string
+          released_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          inactivity_days?: number
+          is_released?: boolean
+          last_checkin_at?: string
+          memorial_message?: string | null
+          owner_id: string
+          released_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          inactivity_days?: number
+          is_released?: boolean
+          last_checkin_at?: string
+          memorial_message?: string | null
+          owner_id?: string
+          released_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_family_member: { Args: { _owner: string }; Returns: boolean }
+      is_vault_released: { Args: { _owner: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      item_type: "photo" | "video" | "file" | "certificate" | "note" | "voice"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +267,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      item_type: ["photo", "video", "file", "certificate", "note", "voice"],
+    },
   },
 } as const
