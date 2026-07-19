@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Camera, Video, FileText, Award, StickyNote, Mic, Upload, Trash2, Plus,
-  Loader2, Play, Download, X,
+  Loader2, Play, Download, X, Languages, Pencil, Check,
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -24,6 +24,24 @@ const TYPE_META: Record<ItemType, { label: string; icon: React.ReactNode; accept
   note: { label: "Notes", icon: <StickyNote className="size-4" /> },
   voice: { label: "Voice notes", icon: <Mic className="size-4" /> },
 };
+
+const TRANSCRIBE_LANGUAGES: { code: string; label: string }[] = [
+  { code: "", label: "Auto-detect" },
+  { code: "en", label: "English" },
+  { code: "es", label: "Spanish" },
+  { code: "fr", label: "French" },
+  { code: "de", label: "German" },
+  { code: "it", label: "Italian" },
+  { code: "pt", label: "Portuguese" },
+  { code: "nl", label: "Dutch" },
+  { code: "hi", label: "Hindi" },
+  { code: "ja", label: "Japanese" },
+  { code: "ko", label: "Korean" },
+  { code: "zh", label: "Chinese" },
+  { code: "ar", label: "Arabic" },
+  { code: "ru", label: "Russian" },
+  { code: "tr", label: "Turkish" },
+];
 
 function VaultPage() {
   const qc = useQueryClient();
@@ -203,9 +221,9 @@ function ItemCard({ item, onDelete }: { item: Item; onDelete: () => void }) {
           <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
             <span>{new Date(item.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</span>
             <div className="flex gap-1">
-              {url && (
+              {(url || item.item_type === "voice" || item.item_type === "note") && (
                 <button onClick={() => setViewer(true)} className="rounded-md p-1.5 hover:bg-accent" title="Open">
-                  {item.item_type === "video" || item.item_type === "voice" ? <Play className="size-4" /> : <Download className="size-4" />}
+                  {item.item_type === "video" || item.item_type === "voice" ? <Play className="size-4" /> : item.item_type === "note" ? <Pencil className="size-4" /> : <Download className="size-4" />}
                 </button>
               )}
               <button onClick={onDelete} className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" title="Remove">
@@ -216,14 +234,38 @@ function ItemCard({ item, onDelete }: { item: Item; onDelete: () => void }) {
         </div>
       </div>
 
-      {viewer && url && (
-        <Viewer item={item} url={url} onClose={() => setViewer(false)} />
+      {viewer && (
+        <Viewer item={item} url={url ?? ""} onClose={() => setViewer(false)} />
       )}
     </>
   );
 }
 
 function Viewer({ item, url, onClose }: { item: Item; url: string; onClose: () => void }) {
+  const qc = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(item.transcript ?? "");
+  const [saving, setSaving] = useState(false);
+  const hasAudio = item.item_type === "voice" && !!item.storage_path;
+
+  async function saveTranscript() {
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("vault_items")
+        .update({ transcript: draft.trim() || null })
+        .eq("id", item.id);
+      if (error) throw error;
+      toast.success("Transcript updated");
+      setEditing(false);
+      qc.invalidateQueries({ queryKey: ["vault_items"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to update");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="relative max-h-[90vh] w-full max-w-3xl overflow-auto rounded-2xl bg-card p-6" onClick={(e) => e.stopPropagation()}>
@@ -233,19 +275,45 @@ function Viewer({ item, url, onClose }: { item: Item; url: string; onClose: () =
         <div className="mt-4">
           {item.item_type === "photo" && <img src={url} alt={item.title} className="mx-auto max-h-[60vh] rounded-lg" />}
           {item.item_type === "video" && <video src={url} controls className="mx-auto max-h-[60vh] w-full rounded-lg" />}
-          {item.item_type === "voice" && <audio src={url} controls className="mx-auto w-full" />}
+          {hasAudio && <audio src={url} controls className="mx-auto w-full" />}
           {(item.item_type === "file" || item.item_type === "certificate") && (
             <a href={url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground">
               <Download className="size-4" /> Download {item.title}
             </a>
           )}
+          {item.item_type === "voice" && !hasAudio && (
+            <p className="text-center text-sm italic text-muted-foreground">Raw audio was not kept — transcript only.</p>
+          )}
         </div>
-        {item.transcript && (
-          <div className="mt-6 rounded-lg border border-border bg-background p-4">
-            <p className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Transcript</p>
-            <p className="whitespace-pre-wrap text-sm">{item.transcript}</p>
+        <div className="mt-6 rounded-lg border border-border bg-background p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+              {item.item_type === "note" ? "Note" : "Transcript"}
+            </p>
+            {!editing ? (
+              <button onClick={() => { setDraft(item.transcript ?? ""); setEditing(true); }} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-accent">
+                <Pencil className="size-3" /> Edit
+              </button>
+            ) : (
+              <div className="flex gap-1">
+                <button onClick={() => setEditing(false)} className="rounded-md px-2 py-1 text-xs hover:bg-accent">Cancel</button>
+                <button onClick={saveTranscript} disabled={saving} className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground disabled:opacity-60">
+                  {saving ? <Loader2 className="size-3 animate-spin" /> : <Check className="size-3" />} Save
+                </button>
+              </div>
+            )}
           </div>
-        )}
+          {editing ? (
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              rows={6}
+              className="w-full rounded-md border border-input bg-card p-2 text-sm outline-none ring-ring focus:ring-2"
+            />
+          ) : (
+            <p className="whitespace-pre-wrap text-sm">{item.transcript || <span className="italic text-muted-foreground">No transcript.</span>}</p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -259,6 +327,7 @@ function UploadDialog({
   const [noteBody, setNoteBody] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [keepAudio, setKeepAudio] = useState(true);
   const meta = TYPE_META[type];
 
   async function save() {
@@ -275,6 +344,17 @@ function UploadDialog({
       if (type === "note") {
         if (!noteBody.trim()) throw new Error("Please write your note");
         transcript = noteBody.trim();
+      } else if (type === "voice") {
+        transcript = noteBody.trim() || null;
+        if (!file && !transcript) throw new Error("Record something or add a transcript");
+        if (file && keepAudio) {
+          const path = `${u.user.id}/${type}/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, "_")}`;
+          const { error: upErr } = await supabase.storage.from("vault").upload(path, file, { upsert: false });
+          if (upErr) throw upErr;
+          storage_path = path;
+          mime_type = file.type;
+          size_bytes = file.size;
+        }
       } else {
         if (!file) throw new Error("Please choose a file");
         const path = `${u.user.id}/${type}/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, "_")}`;
@@ -346,10 +426,29 @@ function UploadDialog({
           </label>
         )}
 
-        {type === "voice" && noteBody && (
-          <div className="mt-3 rounded-md border border-border bg-background p-3">
-            <p className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">Transcript</p>
-            <p className="text-sm">{noteBody}</p>
+        {type === "voice" && (noteBody || file) && (
+          <div className="mt-3 space-y-2 rounded-md border border-border bg-background p-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Transcript (editable)</p>
+              <span className="text-[10px] text-muted-foreground">{noteBody.length} chars</span>
+            </div>
+            <textarea
+              value={noteBody}
+              onChange={(e) => setNoteBody(e.target.value)}
+              rows={4}
+              maxLength={10000}
+              placeholder="Transcript will appear here — edit freely."
+              className="w-full rounded-md border border-input bg-card p-2 text-sm outline-none ring-ring focus:ring-2"
+            />
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={keepAudio}
+                onChange={(e) => setKeepAudio(e.target.checked)}
+                className="size-3.5 accent-primary"
+              />
+              Keep raw audio recording (uncheck to save only the transcript)
+            </label>
           </div>
         )}
 
@@ -390,6 +489,7 @@ function UploadDialog({
 function VoiceRecorder({ onCapture }: { onCapture: (file: File, transcript: string) => void }) {
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [language, setLanguage] = useState<string>("");
   const audioCtxRef = useRef<AudioContext | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const pcmRef = useRef<Float32Array[]>([]);
@@ -431,6 +531,7 @@ function VoiceRecorder({ onCapture }: { onCapture: (file: File, transcript: stri
 
       const form = new FormData();
       form.append("file", file);
+      if (language) form.append("language", language);
       const res = await fetch("/api/public/transcribe", { method: "POST", body: form });
       if (!res.ok) throw new Error(await res.text());
       const { text } = await res.json();
@@ -457,6 +558,20 @@ function VoiceRecorder({ onCapture }: { onCapture: (file: File, transcript: stri
       <p className="mt-3 text-sm text-muted-foreground">
         {processing ? "Transcribing…" : recording ? "Recording — tap to stop" : "Tap to record your voice note"}
       </p>
+      <label className="mt-4 inline-flex items-center gap-2 text-xs text-muted-foreground">
+        <Languages className="size-3.5" />
+        <span>Transcription language</span>
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          disabled={recording || processing}
+          className="rounded-md border border-input bg-card px-2 py-1 text-xs text-foreground outline-none ring-ring focus:ring-2 disabled:opacity-60"
+        >
+          {TRANSCRIBE_LANGUAGES.map((l) => (
+            <option key={l.code} value={l.code}>{l.label}</option>
+          ))}
+        </select>
+      </label>
     </div>
   );
 }
