@@ -14,8 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      death_certificates: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          reviewed_at: string | null
+          status: string
+          storage_path: string
+          uploader_email: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          reviewed_at?: string | null
+          status?: string
+          storage_path: string
+          uploader_email: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          reviewed_at?: string | null
+          status?: string
+          storage_path?: string
+          uploader_email?: string
+        }
+        Relationships: []
+      }
       family_members: {
         Row: {
+          allow_certificate: boolean
+          allow_file: boolean
+          allow_note: boolean
+          allow_photo: boolean
+          allow_video: boolean
+          allow_voice: boolean
           created_at: string
           family_email: string
           full_name: string | null
@@ -24,6 +63,12 @@ export type Database = {
           relationship: string | null
         }
         Insert: {
+          allow_certificate?: boolean
+          allow_file?: boolean
+          allow_note?: boolean
+          allow_photo?: boolean
+          allow_video?: boolean
+          allow_voice?: boolean
           created_at?: string
           family_email: string
           full_name?: string | null
@@ -32,6 +77,12 @@ export type Database = {
           relationship?: string | null
         }
         Update: {
+          allow_certificate?: boolean
+          allow_file?: boolean
+          allow_note?: boolean
+          allow_photo?: boolean
+          allow_video?: boolean
+          allow_voice?: boolean
           created_at?: string
           family_email?: string
           full_name?: string | null
@@ -59,11 +110,63 @@ export type Database = {
         }
         Relationships: []
       }
+      release_approvals: {
+        Row: {
+          approved_at: string
+          contact_email: string
+          id: string
+          owner_id: string
+        }
+        Insert: {
+          approved_at?: string
+          contact_email: string
+          id?: string
+          owner_id: string
+        }
+        Update: {
+          approved_at?: string
+          contact_email?: string
+          id?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
+      trusted_contacts: {
+        Row: {
+          contact_email: string
+          created_at: string
+          full_name: string | null
+          id: string
+          owner_id: string
+          relationship: string | null
+        }
+        Insert: {
+          contact_email: string
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          owner_id: string
+          relationship?: string | null
+        }
+        Update: {
+          contact_email?: string
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          owner_id?: string
+          relationship?: string | null
+        }
+        Relationships: []
+      }
       vault_items: {
         Row: {
           created_at: string
           description: string | null
+          encrypted_description: string | null
+          encrypted_transcript: string | null
           id: string
+          is_encrypted: boolean
+          is_sensitive: boolean
           item_type: Database["public"]["Enums"]["item_type"]
           mime_type: string | null
           owner_id: string
@@ -75,7 +178,11 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          encrypted_description?: string | null
+          encrypted_transcript?: string | null
           id?: string
+          is_encrypted?: boolean
+          is_sensitive?: boolean
           item_type: Database["public"]["Enums"]["item_type"]
           mime_type?: string | null
           owner_id: string
@@ -87,7 +194,11 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          encrypted_description?: string | null
+          encrypted_transcript?: string | null
           id?: string
+          is_encrypted?: boolean
+          is_sensitive?: boolean
           item_type?: Database["public"]["Enums"]["item_type"]
           mime_type?: string | null
           owner_id?: string
@@ -107,6 +218,7 @@ export type Database = {
           memorial_message: string | null
           owner_id: string
           released_at: string | null
+          required_approvals: number
           updated_at: string
         }
         Insert: {
@@ -117,6 +229,7 @@ export type Database = {
           memorial_message?: string | null
           owner_id: string
           released_at?: string | null
+          required_approvals?: number
           updated_at?: string
         }
         Update: {
@@ -127,6 +240,7 @@ export type Database = {
           memorial_message?: string | null
           owner_id?: string
           released_at?: string | null
+          required_approvals?: number
           updated_at?: string
         }
         Relationships: []
@@ -136,6 +250,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      family_can_see_category: {
+        Args: {
+          _owner: string
+          _type: Database["public"]["Enums"]["item_type"]
+        }
+        Returns: boolean
+      }
       is_family_member: { Args: { _owner: string }; Returns: boolean }
       is_vault_released: { Args: { _owner: string }; Returns: boolean }
     }
