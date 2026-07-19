@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Camera, Video, FileText, Award, StickyNote, Mic, Upload, Trash2, Plus,
-  Loader2, Play, Download, X,
+  Loader2, Play, Download, X, Languages, Pencil, Check,
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
