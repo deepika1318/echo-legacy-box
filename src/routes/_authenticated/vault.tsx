@@ -221,9 +221,9 @@ function ItemCard({ item, onDelete }: { item: Item; onDelete: () => void }) {
           <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
             <span>{new Date(item.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</span>
             <div className="flex gap-1">
-              {url && (
+              {(url || item.item_type === "voice" || item.item_type === "note") && (
                 <button onClick={() => setViewer(true)} className="rounded-md p-1.5 hover:bg-accent" title="Open">
-                  {item.item_type === "video" || item.item_type === "voice" ? <Play className="size-4" /> : <Download className="size-4" />}
+                  {item.item_type === "video" || item.item_type === "voice" ? <Play className="size-4" /> : item.item_type === "note" ? <Pencil className="size-4" /> : <Download className="size-4" />}
                 </button>
               )}
               <button onClick={onDelete} className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" title="Remove">
@@ -234,8 +234,8 @@ function ItemCard({ item, onDelete }: { item: Item; onDelete: () => void }) {
         </div>
       </div>
 
-      {viewer && url && (
-        <Viewer item={item} url={url} onClose={() => setViewer(false)} />
+      {viewer && (
+        <Viewer item={item} url={url ?? ""} onClose={() => setViewer(false)} />
       )}
     </>
   );
