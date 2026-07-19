@@ -489,6 +489,7 @@ function UploadDialog({
 function VoiceRecorder({ onCapture }: { onCapture: (file: File, transcript: string) => void }) {
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [language, setLanguage] = useState<string>("");
   const audioCtxRef = useRef<AudioContext | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const pcmRef = useRef<Float32Array[]>([]);
