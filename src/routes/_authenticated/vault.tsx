@@ -25,6 +25,24 @@ const TYPE_META: Record<ItemType, { label: string; icon: React.ReactNode; accept
   voice: { label: "Voice notes", icon: <Mic className="size-4" /> },
 };
 
+const TRANSCRIBE_LANGUAGES: { code: string; label: string }[] = [
+  { code: "", label: "Auto-detect" },
+  { code: "en", label: "English" },
+  { code: "es", label: "Spanish" },
+  { code: "fr", label: "French" },
+  { code: "de", label: "German" },
+  { code: "it", label: "Italian" },
+  { code: "pt", label: "Portuguese" },
+  { code: "nl", label: "Dutch" },
+  { code: "hi", label: "Hindi" },
+  { code: "ja", label: "Japanese" },
+  { code: "ko", label: "Korean" },
+  { code: "zh", label: "Chinese" },
+  { code: "ar", label: "Arabic" },
+  { code: "ru", label: "Russian" },
+  { code: "tr", label: "Turkish" },
+];
+
 function VaultPage() {
   const qc = useQueryClient();
   const [filter, setFilter] = useState<ItemType | "all">("all");
