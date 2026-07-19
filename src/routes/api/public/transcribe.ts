@@ -23,9 +23,15 @@ export const Route = createFileRoute("/api/public/transcribe")({
             return new Response(JSON.stringify({ error: "Recording too large" }), { status: 400 });
           }
 
+          const language = (form.get("language") as string | null)?.trim() || "";
+
           const upstream = new FormData();
           upstream.append("model", "openai/gpt-4o-transcribe");
           upstream.append("file", file, "recording.wav");
+          // Only forward well-formed ISO-639-1 codes (2 letters); "auto" or empty = auto-detect
+          if (/^[a-z]{2}$/i.test(language)) {
+            upstream.append("language", language.toLowerCase());
+          }
 
           const res = await fetch("https://ai.gateway.lovable.dev/v1/audio/transcriptions", {
             method: "POST",
