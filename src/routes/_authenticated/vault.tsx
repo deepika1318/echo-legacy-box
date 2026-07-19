@@ -558,6 +558,20 @@ function VoiceRecorder({ onCapture }: { onCapture: (file: File, transcript: stri
       <p className="mt-3 text-sm text-muted-foreground">
         {processing ? "Transcribing…" : recording ? "Recording — tap to stop" : "Tap to record your voice note"}
       </p>
+      <label className="mt-4 inline-flex items-center gap-2 text-xs text-muted-foreground">
+        <Languages className="size-3.5" />
+        <span>Transcription language</span>
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          disabled={recording || processing}
+          className="rounded-md border border-input bg-card px-2 py-1 text-xs text-foreground outline-none ring-ring focus:ring-2 disabled:opacity-60"
+        >
+          {TRANSCRIBE_LANGUAGES.map((l) => (
+            <option key={l.code} value={l.code}>{l.label}</option>
+          ))}
+        </select>
+      </label>
     </div>
   );
 }
