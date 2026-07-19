@@ -327,6 +327,7 @@ function UploadDialog({
   const [noteBody, setNoteBody] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [keepAudio, setKeepAudio] = useState(true);
   const meta = TYPE_META[type];
 
   async function save() {
@@ -343,6 +344,17 @@ function UploadDialog({
       if (type === "note") {
         if (!noteBody.trim()) throw new Error("Please write your note");
         transcript = noteBody.trim();
+      } else if (type === "voice") {
+        transcript = noteBody.trim() || null;
+        if (!file && !transcript) throw new Error("Record something or add a transcript");
+        if (file && keepAudio) {
+          const path = `${u.user.id}/${type}/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, "_")}`;
+          const { error: upErr } = await supabase.storage.from("vault").upload(path, file, { upsert: false });
+          if (upErr) throw upErr;
+          storage_path = path;
+          mime_type = file.type;
+          size_bytes = file.size;
+        }
       } else {
         if (!file) throw new Error("Please choose a file");
         const path = `${u.user.id}/${type}/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, "_")}`;
