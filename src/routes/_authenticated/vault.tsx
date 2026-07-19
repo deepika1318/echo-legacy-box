@@ -242,6 +242,30 @@ function ItemCard({ item, onDelete }: { item: Item; onDelete: () => void }) {
 }
 
 function Viewer({ item, url, onClose }: { item: Item; url: string; onClose: () => void }) {
+  const qc = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(item.transcript ?? "");
+  const [saving, setSaving] = useState(false);
+  const hasAudio = item.item_type === "voice" && !!item.storage_path;
+
+  async function saveTranscript() {
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("vault_items")
+        .update({ transcript: draft.trim() || null })
+        .eq("id", item.id);
+      if (error) throw error;
+      toast.success("Transcript updated");
+      setEditing(false);
+      qc.invalidateQueries({ queryKey: ["vault_items"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to update");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="relative max-h-[90vh] w-full max-w-3xl overflow-auto rounded-2xl bg-card p-6" onClick={(e) => e.stopPropagation()}>
@@ -251,19 +275,45 @@ function Viewer({ item, url, onClose }: { item: Item; url: string; onClose: () =
         <div className="mt-4">
           {item.item_type === "photo" && <img src={url} alt={item.title} className="mx-auto max-h-[60vh] rounded-lg" />}
           {item.item_type === "video" && <video src={url} controls className="mx-auto max-h-[60vh] w-full rounded-lg" />}
-          {item.item_type === "voice" && <audio src={url} controls className="mx-auto w-full" />}
+          {hasAudio && <audio src={url} controls className="mx-auto w-full" />}
           {(item.item_type === "file" || item.item_type === "certificate") && (
             <a href={url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground">
               <Download className="size-4" /> Download {item.title}
             </a>
           )}
+          {item.item_type === "voice" && !hasAudio && (
+            <p className="text-center text-sm italic text-muted-foreground">Raw audio was not kept — transcript only.</p>
+          )}
         </div>
-        {item.transcript && (
-          <div className="mt-6 rounded-lg border border-border bg-background p-4">
-            <p className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Transcript</p>
-            <p className="whitespace-pre-wrap text-sm">{item.transcript}</p>
+        <div className="mt-6 rounded-lg border border-border bg-background p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">
+              {item.item_type === "note" ? "Note" : "Transcript"}
+            </p>
+            {!editing ? (
+              <button onClick={() => { setDraft(item.transcript ?? ""); setEditing(true); }} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs hover:bg-accent">
+                <Pencil className="size-3" /> Edit
+              </button>
+            ) : (
+              <div className="flex gap-1">
+                <button onClick={() => setEditing(false)} className="rounded-md px-2 py-1 text-xs hover:bg-accent">Cancel</button>
+                <button onClick={saveTranscript} disabled={saving} className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground disabled:opacity-60">
+                  {saving ? <Loader2 className="size-3 animate-spin" /> : <Check className="size-3" />} Save
+                </button>
+              </div>
+            )}
           </div>
-        )}
+          {editing ? (
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              rows={6}
+              className="w-full rounded-md border border-input bg-card p-2 text-sm outline-none ring-ring focus:ring-2"
+            />
+          ) : (
+            <p className="whitespace-pre-wrap text-sm">{item.transcript || <span className="italic text-muted-foreground">No transcript.</span>}</p>
+          )}
+        </div>
       </div>
     </div>
   );
