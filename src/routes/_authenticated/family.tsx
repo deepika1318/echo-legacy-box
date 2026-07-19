@@ -16,6 +16,15 @@ const schema = z.object({
   relationship: z.string().trim().max(60).optional(),
 });
 
+const PERMS = [
+  { key: "allow_photo", label: "Photos" },
+  { key: "allow_video", label: "Videos" },
+  { key: "allow_voice", label: "Voice notes" },
+  { key: "allow_note", label: "Notes" },
+  { key: "allow_file", label: "Files" },
+  { key: "allow_certificate", label: "Certificates" },
+] as const;
+
 function FamilyPage() {
   const qc = useQueryClient();
   const [email, setEmail] = useState("");
@@ -69,17 +78,23 @@ function FamilyPage() {
     qc.invalidateQueries({ queryKey: ["family_members"] });
   }
 
+  async function togglePerm(id: string, key: (typeof PERMS)[number]["key"], value: boolean) {
+    const patch = { [key]: value } as Partial<Record<(typeof PERMS)[number]["key"], boolean>>;
+    const { error } = await supabase.from("family_members").update(patch).eq("id", id);
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["family_members"] });
+  }
+
   return (
     <div>
       <div className="mb-8">
         <h1 className="font-serif text-4xl text-primary">Family</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          The people who should inherit access. They'll need to create their own vault account
-          using the exact email you enter here, then sign in to view yours once it's released.
+          The people who should inherit access, and exactly what each of them can see.
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-[1fr_1.2fr]">
+      <div className="grid gap-6 md:grid-cols-[1fr_1.4fr]">
         <form onSubmit={invite} className="h-fit rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-soft)]">
           <h2 className="mb-4 flex items-center gap-2 font-serif text-xl text-primary">
             <Mail className="size-5" /> Invite by email
@@ -102,8 +117,7 @@ function FamilyPage() {
             </button>
           </div>
           <p className="mt-4 rounded-md border-l-2 border-gold/40 bg-accent/40 p-3 text-xs text-muted-foreground">
-            Family members will see your vault only after it's released — either you mark it released
-            on the Legacy page, or your check-ins lapse past your chosen inactivity window.
+            New family members see everything except certificates by default. Toggle per person on the right.
           </p>
         </form>
 
@@ -118,16 +132,42 @@ function FamilyPage() {
           ) : (
             <ul className="divide-y divide-border/60">
               {members.map((m) => (
-                <li key={m.id} className="flex items-center justify-between py-3">
-                  <div>
-                    <p className="font-medium">{m.full_name || m.family_email}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {m.family_email}{m.relationship ? ` • ${m.relationship}` : ""}
-                    </p>
+                <li key={m.id} className="py-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium">{m.full_name || m.family_email}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {m.family_email}{m.relationship ? ` • ${m.relationship}` : ""}
+                      </p>
+                    </div>
+                    <button onClick={() => remove(m.id)} className="rounded-md p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
+                      <Trash2 className="size-4" />
+                    </button>
                   </div>
-                  <button onClick={() => remove(m.id)} className="rounded-md p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
-                    <Trash2 className="size-4" />
-                  </button>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {PERMS.map((p) => {
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      const checked = Boolean((m as any)[p.key]);
+                      return (
+                        <label
+                          key={p.key}
+                          className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition ${
+                            checked
+                              ? "border-gold/50 bg-gold/10 text-primary"
+                              : "border-border bg-background text-muted-foreground"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="hidden"
+                            checked={checked}
+                            onChange={(e) => togglePerm(m.id, p.key, e.target.checked)}
+                          />
+                          {p.label}
+                        </label>
+                      );
+                    })}
+                  </div>
                 </li>
               ))}
             </ul>

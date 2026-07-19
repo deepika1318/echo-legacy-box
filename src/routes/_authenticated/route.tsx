@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { Vault, Users, Clock, LogOut, Heart } from "lucide-react";
+import { Vault, Users, Clock, LogOut, Heart, ShieldCheck } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -38,6 +38,7 @@ function AuthedLayout() {
             <NavLink to="/vault" icon={<Vault className="size-4" />} label="Vault" />
             <NavLink to="/family" icon={<Users className="size-4" />} label="Family" />
             <NavLink to="/legacy" icon={<Clock className="size-4" />} label="Legacy" />
+            <NavLink to="/verify" icon={<ShieldCheck className="size-4" />} label="Verify" />
           </nav>
           <button
             onClick={signOut}
@@ -46,10 +47,11 @@ function AuthedLayout() {
             <LogOut className="size-4" /> Sign out
           </button>
         </div>
-        <div className="mx-auto flex max-w-6xl gap-1 px-4 pb-3 md:hidden">
+        <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 pb-3 md:hidden">
           <NavLink to="/vault" icon={<Vault className="size-4" />} label="Vault" />
           <NavLink to="/family" icon={<Users className="size-4" />} label="Family" />
           <NavLink to="/legacy" icon={<Clock className="size-4" />} label="Legacy" />
+          <NavLink to="/verify" icon={<ShieldCheck className="size-4" />} label="Verify" />
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8">
