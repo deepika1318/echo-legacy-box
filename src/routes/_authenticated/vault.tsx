@@ -531,6 +531,7 @@ function VoiceRecorder({ onCapture }: { onCapture: (file: File, transcript: stri
 
       const form = new FormData();
       form.append("file", file);
+      if (language) form.append("language", language);
       const res = await fetch("/api/public/transcribe", { method: "POST", body: form });
       if (!res.ok) throw new Error(await res.text());
       const { text } = await res.json();
