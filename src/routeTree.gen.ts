@@ -13,6 +13,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedVerifyRouteImport } from './routes/_authenticated/verify'
 import { Route as AuthenticatedVaultRouteImport } from './routes/_authenticated/vault'
 import { Route as AuthenticatedLegacyRouteImport } from './routes/_authenticated/legacy'
 import { Route as AuthenticatedFamilyRouteImport } from './routes/_authenticated/family'
@@ -37,6 +38,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedVerifyRoute = AuthenticatedVerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedVaultRoute = AuthenticatedVaultRouteImport.update({
   id: '/vault',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/family': typeof AuthenticatedFamilyRoute
   '/legacy': typeof AuthenticatedLegacyRoute
   '/vault': typeof AuthenticatedVaultRoute
+  '/verify': typeof AuthenticatedVerifyRoute
   '/memorial/$ownerId': typeof AuthenticatedMemorialOwnerIdRoute
   '/api/public/transcribe': typeof ApiPublicTranscribeRoute
 }
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/family': typeof AuthenticatedFamilyRoute
   '/legacy': typeof AuthenticatedLegacyRoute
   '/vault': typeof AuthenticatedVaultRoute
+  '/verify': typeof AuthenticatedVerifyRoute
   '/memorial/$ownerId': typeof AuthenticatedMemorialOwnerIdRoute
   '/api/public/transcribe': typeof ApiPublicTranscribeRoute
 }
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/_authenticated/family': typeof AuthenticatedFamilyRoute
   '/_authenticated/legacy': typeof AuthenticatedLegacyRoute
   '/_authenticated/vault': typeof AuthenticatedVaultRoute
+  '/_authenticated/verify': typeof AuthenticatedVerifyRoute
   '/_authenticated/memorial/$ownerId': typeof AuthenticatedMemorialOwnerIdRoute
   '/api/public/transcribe': typeof ApiPublicTranscribeRoute
 }
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/family'
     | '/legacy'
     | '/vault'
+    | '/verify'
     | '/memorial/$ownerId'
     | '/api/public/transcribe'
   fileRoutesByTo: FileRoutesByTo
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/family'
     | '/legacy'
     | '/vault'
+    | '/verify'
     | '/memorial/$ownerId'
     | '/api/public/transcribe'
   id:
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/_authenticated/family'
     | '/_authenticated/legacy'
     | '/_authenticated/vault'
+    | '/_authenticated/verify'
     | '/_authenticated/memorial/$ownerId'
     | '/api/public/transcribe'
   fileRoutesById: FileRoutesById
@@ -168,6 +180,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/verify': {
+      id: '/_authenticated/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof AuthenticatedVerifyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/vault': {
       id: '/_authenticated/vault'
@@ -211,6 +230,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFamilyRoute: typeof AuthenticatedFamilyRoute
   AuthenticatedLegacyRoute: typeof AuthenticatedLegacyRoute
   AuthenticatedVaultRoute: typeof AuthenticatedVaultRoute
+  AuthenticatedVerifyRoute: typeof AuthenticatedVerifyRoute
   AuthenticatedMemorialOwnerIdRoute: typeof AuthenticatedMemorialOwnerIdRoute
 }
 
@@ -218,6 +238,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFamilyRoute: AuthenticatedFamilyRoute,
   AuthenticatedLegacyRoute: AuthenticatedLegacyRoute,
   AuthenticatedVaultRoute: AuthenticatedVaultRoute,
+  AuthenticatedVerifyRoute: AuthenticatedVerifyRoute,
   AuthenticatedMemorialOwnerIdRoute: AuthenticatedMemorialOwnerIdRoute,
 }
 

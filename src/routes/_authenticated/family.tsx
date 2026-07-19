@@ -78,8 +78,9 @@ function FamilyPage() {
     qc.invalidateQueries({ queryKey: ["family_members"] });
   }
 
-  async function togglePerm(id: string, key: string, value: boolean) {
-    const { error } = await supabase.from("family_members").update({ [key]: value }).eq("id", id);
+  async function togglePerm(id: string, key: (typeof PERMS)[number]["key"], value: boolean) {
+    const patch = { [key]: value } as Partial<Record<(typeof PERMS)[number]["key"], boolean>>;
+    const { error } = await supabase.from("family_members").update(patch).eq("id", id);
     if (error) return toast.error(error.message);
     qc.invalidateQueries({ queryKey: ["family_members"] });
   }
