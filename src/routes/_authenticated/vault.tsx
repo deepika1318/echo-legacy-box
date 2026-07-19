@@ -426,10 +426,29 @@ function UploadDialog({
           </label>
         )}
 
-        {type === "voice" && noteBody && (
-          <div className="mt-3 rounded-md border border-border bg-background p-3">
-            <p className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">Transcript</p>
-            <p className="text-sm">{noteBody}</p>
+        {type === "voice" && (noteBody || file) && (
+          <div className="mt-3 space-y-2 rounded-md border border-border bg-background p-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Transcript (editable)</p>
+              <span className="text-[10px] text-muted-foreground">{noteBody.length} chars</span>
+            </div>
+            <textarea
+              value={noteBody}
+              onChange={(e) => setNoteBody(e.target.value)}
+              rows={4}
+              maxLength={10000}
+              placeholder="Transcript will appear here — edit freely."
+              className="w-full rounded-md border border-input bg-card p-2 text-sm outline-none ring-ring focus:ring-2"
+            />
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={keepAudio}
+                onChange={(e) => setKeepAudio(e.target.checked)}
+                className="size-3.5 accent-primary"
+              />
+              Keep raw audio recording (uncheck to save only the transcript)
+            </label>
           </div>
         )}
 
