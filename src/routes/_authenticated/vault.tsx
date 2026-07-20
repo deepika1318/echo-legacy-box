@@ -130,18 +130,62 @@ function VaultPage() {
             {items.length} {items.length === 1 ? "memory" : "memories"} preserved
           </p>
         </div>
+        <button
+          onClick={reindexAll}
+          disabled={reindexing}
+          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-60"
+          title="Generate AI embeddings for any memories not yet indexed"
+        >
+          {reindexing ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+          Reindex for AI search
+        </button>
       </div>
 
-      <div className="mb-6 flex flex-wrap gap-2">
-        <Chip active={filter === "all"} onClick={() => setFilter("all")}>
-          All
-        </Chip>
-        {(Object.keys(TYPE_META) as ItemType[]).map((t) => (
-          <Chip key={t} active={filter === t} onClick={() => setFilter(t)}>
-            {TYPE_META[t].icon} {TYPE_META[t].label}
+      <form onSubmit={runSearch} className="mb-6">
+        <div className="relative flex items-center rounded-xl border border-border bg-card shadow-[var(--shadow-soft)] focus-within:border-gold">
+          <Sparkles className="pointer-events-none absolute left-3 size-4 text-gold" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder='Ask your vault — e.g. "graduation photos" or "grandma\'s recipe"'
+            className="w-full bg-transparent py-3 pl-10 pr-32 text-sm outline-none placeholder:text-muted-foreground/70"
+          />
+          <div className="absolute right-2 flex items-center gap-1">
+            {matches && (
+              <button type="button" onClick={clearSearch} className="rounded-md p-1.5 text-muted-foreground hover:bg-accent" title="Clear">
+                <X className="size-4" />
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={searching || !query.trim()}
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground disabled:opacity-60"
+            >
+              {searching ? <Loader2 className="size-3.5 animate-spin" /> : <Search className="size-3.5" />}
+              Search
+            </button>
+          </div>
+        </div>
+        {matches && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            {matches.length === 0 ? "No matches found." : `Found ${matches.length} matching ${matches.length === 1 ? "memory" : "memories"}, ranked by relevance.`}
+          </p>
+        )}
+      </form>
+
+      {!matches && (
+        <div className="mb-6 flex flex-wrap gap-2">
+          <Chip active={filter === "all"} onClick={() => setFilter("all")}>
+            All
           </Chip>
-        ))}
-      </div>
+          {(Object.keys(TYPE_META) as ItemType[]).map((t) => (
+            <Chip key={t} active={filter === t} onClick={() => setFilter(t)}>
+              {TYPE_META[t].icon} {TYPE_META[t].label}
+            </Chip>
+          ))}
+        </div>
+      )}
 
       <div className="mb-8 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
         {(Object.keys(TYPE_META) as ItemType[]).map((t) => (
@@ -164,8 +208,8 @@ function VaultPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-card/50 py-16 text-center">
-          <p className="font-serif text-2xl text-primary">Nothing here yet</p>
-          <p className="mt-2 text-sm text-muted-foreground">Add your first memory above.</p>
+          <p className="font-serif text-2xl text-primary">{matches ? "No memories matched" : "Nothing here yet"}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{matches ? "Try different words or clear the search." : "Add your first memory above."}</p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -174,6 +218,7 @@ function VaultPage() {
           ))}
         </div>
       )}
+
 
       {uploadOpen && (
         <UploadDialog
