@@ -64,18 +64,18 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/vault`,
+            emailRedirectTo: `${window.location.origin}${safeNext ?? "/vault"}`,
             data: { full_name: fullName || null },
           },
         });
         if (error) throw error;
         toast.success("Vault created — welcome.");
-        nav({ to: "/vault", replace: true });
+        goNext();
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Welcome back.");
-        nav({ to: "/vault", replace: true });
+        goNext();
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
