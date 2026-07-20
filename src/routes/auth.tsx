@@ -6,6 +6,9 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : undefined,
+  }),
   component: AuthPage,
 });
 
@@ -19,6 +22,14 @@ type Mode = "signin" | "signup" | "forgot";
 
 function AuthPage() {
   const nav = useNavigate();
+  const { next } = Route.useSearch();
+  // Only allow same-origin relative paths for redirect target.
+  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+  const goNext = () => {
+    if (safeNext) window.location.replace(safeNext);
+    else nav({ to: "/vault", replace: true });
+  };
+
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,9 +38,10 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) nav({ to: "/vault", replace: true });
+      if (data.user) goNext();
     });
-  }, [nav]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
