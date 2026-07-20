@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://fnteqpoheboecntdqmvq.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "ai-digital-vault-mcp",
+      "version": "0.1.0",
+      "title": "AI Digital Vault"
+    },
+    "tools": [
+      {
+        "name": "search_memories",
+        "title": "Search memories",
+        "description": "Semantic search across the signed-in user's vault items using natural language (e.g. 'graduation photos', 'notes about grandma's recipes'). Returns ranked matches with id, title, category, and similarity score.",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500,
+              "description": "Natural-language search query."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30,
+              "description": "Max matches (default 10)."
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_vault_items",
+        "title": "List vault items",
+        "description": "List items in the signed-in user's vault. Optionally filter by category (photo, video, file, certificate, voice_note, note) and limit results. Returns id, title, category, and creation time — use get_vault_item for full details.",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "enum": [
+                "photo",
+                "video",
+                "file",
+                "certificate",
+                "voice",
+                "note"
+              ],
+              "description": "Filter by item category."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Max items to return (default 25)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_vault_item",
+        "title": "Get vault item",
+        "description": "Fetch full details of one vault item by id, including description and transcript (decrypted for the owner or a family member with released access).",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Vault item id."
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_note",
+        "title": "Create note",
+        "description": "Add a text note memory to the signed-in user's vault. Use for written memories, reflections, or transcribed thoughts.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Short title for the note."
+            },
+            "body": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 20000,
+              "description": "Note contents / memory text."
+            }
+          },
+          "required": [
+            "title",
+            "body"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_family_members",
+        "title": "List family members",
+        "description": "List family members invited to the signed-in user's vault along with their per-category access permissions.",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
