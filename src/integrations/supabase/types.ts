@@ -162,6 +162,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          embedding: string | null
           encrypted_description: string | null
           encrypted_transcript: string | null
           id: string
@@ -170,6 +171,7 @@ export type Database = {
           item_type: Database["public"]["Enums"]["item_type"]
           mime_type: string | null
           owner_id: string
+          search_text: string | null
           size_bytes: number | null
           storage_path: string | null
           title: string
@@ -178,6 +180,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          embedding?: string | null
           encrypted_description?: string | null
           encrypted_transcript?: string | null
           id?: string
@@ -186,6 +189,7 @@ export type Database = {
           item_type: Database["public"]["Enums"]["item_type"]
           mime_type?: string | null
           owner_id: string
+          search_text?: string | null
           size_bytes?: number | null
           storage_path?: string | null
           title: string
@@ -194,6 +198,7 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          embedding?: string | null
           encrypted_description?: string | null
           encrypted_transcript?: string | null
           id?: string
@@ -202,6 +207,7 @@ export type Database = {
           item_type?: Database["public"]["Enums"]["item_type"]
           mime_type?: string | null
           owner_id?: string
+          search_text?: string | null
           size_bytes?: number | null
           storage_path?: string | null
           title?: string
@@ -259,6 +265,18 @@ export type Database = {
       }
       is_family_member: { Args: { _owner: string }; Returns: boolean }
       is_vault_released: { Args: { _owner: string }; Returns: boolean }
+      match_vault_items: {
+        Args: {
+          _owner: string
+          match_count?: number
+          min_similarity?: number
+          query_embedding: string
+        }
+        Returns: {
+          id: string
+          similarity: number
+        }[]
+      }
     }
     Enums: {
       item_type: "photo" | "video" | "file" | "certificate" | "note" | "voice"

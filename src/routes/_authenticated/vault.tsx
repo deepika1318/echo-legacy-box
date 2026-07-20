@@ -2,12 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
   Camera, Video, FileText, Award, StickyNote, Mic, Upload, Trash2, Plus,
-  Loader2, Play, Download, X, Languages, Pencil, Check,
+  Loader2, Play, Download, X, Languages, Pencil, Check, Search, Sparkles,
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { embedItems, searchMemories } from "@/lib/search.functions";
 
 type ItemType = Database["public"]["Enums"]["item_type"];
 type Item = Database["public"]["Tables"]["vault_items"]["Row"];
@@ -47,6 +49,12 @@ function VaultPage() {
   const qc = useQueryClient();
   const [filter, setFilter] = useState<ItemType | "all">("all");
   const [uploadOpen, setUploadOpen] = useState<null | ItemType>(null);
+  const [query, setQuery] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [reindexing, setReindexing] = useState(false);
+  const [matches, setMatches] = useState<{ id: string; similarity: number }[] | null>(null);
+  const search = useServerFn(searchMemories);
+  const reindex = useServerFn(embedItems);
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["vault_items"],
@@ -63,10 +71,46 @@ function VaultPage() {
     },
   });
 
-  const filtered = useMemo(
-    () => (filter === "all" ? items : items.filter((i) => i.item_type === filter)),
-    [items, filter]
-  );
+  const filtered = useMemo(() => {
+    if (matches) {
+      const byId = new Map(items.map((i) => [i.id, i]));
+      return matches.map((m) => byId.get(m.id)).filter(Boolean) as Item[];
+    }
+    return filter === "all" ? items : items.filter((i) => i.item_type === filter);
+  }, [items, filter, matches]);
+
+  async function runSearch(e?: React.FormEvent) {
+    e?.preventDefault();
+    const q = query.trim();
+    if (!q) { setMatches(null); return; }
+    setSearching(true);
+    try {
+      const { matches: m } = await search({ data: { query: q } });
+      setMatches(m);
+      if (m.length === 0) toast.info("No memories matched — try different words.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Search failed");
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function clearSearch() {
+    setQuery("");
+    setMatches(null);
+  }
+
+  async function reindexAll() {
+    setReindexing(true);
+    try {
+      const { embedded } = await reindex({ data: {} });
+      toast.success(embedded ? `Indexed ${embedded} memories` : "Everything is already indexed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Reindex failed");
+    } finally {
+      setReindexing(false);
+    }
+  }
 
   async function del(item: Item) {
     if (!confirm(`Remove "${item.title}" from your vault?`)) return;
@@ -86,18 +130,62 @@ function VaultPage() {
             {items.length} {items.length === 1 ? "memory" : "memories"} preserved
           </p>
         </div>
+        <button
+          onClick={reindexAll}
+          disabled={reindexing}
+          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-60"
+          title="Generate AI embeddings for any memories not yet indexed"
+        >
+          {reindexing ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+          Reindex for AI search
+        </button>
       </div>
 
-      <div className="mb-6 flex flex-wrap gap-2">
-        <Chip active={filter === "all"} onClick={() => setFilter("all")}>
-          All
-        </Chip>
-        {(Object.keys(TYPE_META) as ItemType[]).map((t) => (
-          <Chip key={t} active={filter === t} onClick={() => setFilter(t)}>
-            {TYPE_META[t].icon} {TYPE_META[t].label}
+      <form onSubmit={runSearch} className="mb-6">
+        <div className="relative flex items-center rounded-xl border border-border bg-card shadow-[var(--shadow-soft)] focus-within:border-gold">
+          <Sparkles className="pointer-events-none absolute left-3 size-4 text-gold" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={`Ask your vault — e.g. "graduation photos" or "grandma's recipe"`}
+            className="w-full bg-transparent py-3 pl-10 pr-32 text-sm outline-none placeholder:text-muted-foreground/70"
+          />
+          <div className="absolute right-2 flex items-center gap-1">
+            {matches && (
+              <button type="button" onClick={clearSearch} className="rounded-md p-1.5 text-muted-foreground hover:bg-accent" title="Clear">
+                <X className="size-4" />
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={searching || !query.trim()}
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground disabled:opacity-60"
+            >
+              {searching ? <Loader2 className="size-3.5 animate-spin" /> : <Search className="size-3.5" />}
+              Search
+            </button>
+          </div>
+        </div>
+        {matches && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            {matches.length === 0 ? "No matches found." : `Found ${matches.length} matching ${matches.length === 1 ? "memory" : "memories"}, ranked by relevance.`}
+          </p>
+        )}
+      </form>
+
+      {!matches && (
+        <div className="mb-6 flex flex-wrap gap-2">
+          <Chip active={filter === "all"} onClick={() => setFilter("all")}>
+            All
           </Chip>
-        ))}
-      </div>
+          {(Object.keys(TYPE_META) as ItemType[]).map((t) => (
+            <Chip key={t} active={filter === t} onClick={() => setFilter(t)}>
+              {TYPE_META[t].icon} {TYPE_META[t].label}
+            </Chip>
+          ))}
+        </div>
+      )}
 
       <div className="mb-8 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
         {(Object.keys(TYPE_META) as ItemType[]).map((t) => (
@@ -120,8 +208,8 @@ function VaultPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-card/50 py-16 text-center">
-          <p className="font-serif text-2xl text-primary">Nothing here yet</p>
-          <p className="mt-2 text-sm text-muted-foreground">Add your first memory above.</p>
+          <p className="font-serif text-2xl text-primary">{matches ? "No memories matched" : "Nothing here yet"}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{matches ? "Try different words or clear the search." : "Add your first memory above."}</p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -130,6 +218,7 @@ function VaultPage() {
           ))}
         </div>
       )}
+
 
       {uploadOpen && (
         <UploadDialog
@@ -248,6 +337,7 @@ function Viewer({ item, url, onClose }: { item: Item; url: string; onClose: () =
   const [saving, setSaving] = useState(false);
   const hasAudio = item.item_type === "voice" && !!item.storage_path;
 
+  const reembed = useServerFn(embedItems);
   async function saveTranscript() {
     setSaving(true);
     try {
@@ -256,6 +346,7 @@ function Viewer({ item, url, onClose }: { item: Item; url: string; onClose: () =
         .update({ transcript: draft.trim() || null })
         .eq("id", item.id);
       if (error) throw error;
+      reembed({ data: { itemId: item.id } }).catch(() => {});
       toast.success("Transcript updated");
       setEditing(false);
       qc.invalidateQueries({ queryKey: ["vault_items"] });
@@ -329,6 +420,7 @@ function UploadDialog({
   const [busy, setBusy] = useState(false);
   const [keepAudio, setKeepAudio] = useState(true);
   const meta = TYPE_META[type];
+  const embedOne = useServerFn(embedItems);
 
   async function save() {
     setBusy(true);
@@ -365,7 +457,7 @@ function UploadDialog({
         size_bytes = file.size;
       }
 
-      const { error } = await supabase.from("vault_items").insert({
+      const { data: inserted, error } = await supabase.from("vault_items").insert({
         owner_id: u.user.id,
         item_type: type,
         title: title.trim() || file?.name || "Untitled",
@@ -374,8 +466,9 @@ function UploadDialog({
         mime_type,
         size_bytes,
         transcript,
-      });
+      }).select("id").single();
       if (error) throw error;
+      if (inserted?.id) embedOne({ data: { itemId: inserted.id } }).catch(() => {});
       toast.success("Saved to your vault");
       onDone();
     } catch (e) {
