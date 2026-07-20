@@ -49,6 +49,12 @@ function VaultPage() {
   const qc = useQueryClient();
   const [filter, setFilter] = useState<ItemType | "all">("all");
   const [uploadOpen, setUploadOpen] = useState<null | ItemType>(null);
+  const [query, setQuery] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [reindexing, setReindexing] = useState(false);
+  const [matches, setMatches] = useState<{ id: string; similarity: number }[] | null>(null);
+  const search = useServerFn(searchMemories);
+  const reindex = useServerFn(embedItems);
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["vault_items"],
@@ -65,10 +71,46 @@ function VaultPage() {
     },
   });
 
-  const filtered = useMemo(
-    () => (filter === "all" ? items : items.filter((i) => i.item_type === filter)),
-    [items, filter]
-  );
+  const filtered = useMemo(() => {
+    if (matches) {
+      const byId = new Map(items.map((i) => [i.id, i]));
+      return matches.map((m) => byId.get(m.id)).filter(Boolean) as Item[];
+    }
+    return filter === "all" ? items : items.filter((i) => i.item_type === filter);
+  }, [items, filter, matches]);
+
+  async function runSearch(e?: React.FormEvent) {
+    e?.preventDefault();
+    const q = query.trim();
+    if (!q) { setMatches(null); return; }
+    setSearching(true);
+    try {
+      const { matches: m } = await search({ data: { query: q } });
+      setMatches(m);
+      if (m.length === 0) toast.info("No memories matched — try different words.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Search failed");
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function clearSearch() {
+    setQuery("");
+    setMatches(null);
+  }
+
+  async function reindexAll() {
+    setReindexing(true);
+    try {
+      const { embedded } = await reindex({ data: {} });
+      toast.success(embedded ? `Indexed ${embedded} memories` : "Everything is already indexed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Reindex failed");
+    } finally {
+      setReindexing(false);
+    }
+  }
 
   async function del(item: Item) {
     if (!confirm(`Remove "${item.title}" from your vault?`)) return;
