@@ -14,11 +14,13 @@ export default defineTool({
   annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
   handler: async ({ title, body }, ctx) => {
     if (!ctx.isAuthenticated()) return notAuthed();
+    const userId = ctx.getUserId();
+    if (!userId) return notAuthed();
     const supabase = supabaseForUser(ctx);
     const { data, error } = await supabase
       .from("vault_items")
       .insert({
-        owner_id: ctx.getUserId(),
+        owner_id: userId,
         title,
         description: body,
         item_type: "note",
