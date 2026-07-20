@@ -420,6 +420,7 @@ function UploadDialog({
   const [busy, setBusy] = useState(false);
   const [keepAudio, setKeepAudio] = useState(true);
   const meta = TYPE_META[type];
+  const embedOne = useServerFn(embedItems);
 
   async function save() {
     setBusy(true);
