@@ -256,15 +256,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      family_can_see_category: {
-        Args: {
-          _owner: string
-          _type: Database["public"]["Enums"]["item_type"]
-        }
-        Returns: boolean
-      }
-      is_family_member: { Args: { _owner: string }; Returns: boolean }
-      is_vault_released: { Args: { _owner: string }; Returns: boolean }
       match_vault_items: {
         Args: {
           _owner: string
