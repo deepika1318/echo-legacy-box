@@ -9,7 +9,7 @@ export default defineTool({
     "List items in the signed-in user's vault. Optionally filter by category (photo, video, file, certificate, voice_note, note) and limit results. Returns id, title, category, and creation time — use get_vault_item for full details.",
   inputSchema: {
     category: z
-      .enum(["photo", "video", "file", "certificate", "voice_note", "note"])
+      .enum(["photo", "video", "file", "certificate", "voice", "note"])
       .optional()
       .describe("Filter by item category."),
     limit: z.number().int().min(1).max(100).optional().describe("Max items to return (default 25)."),
