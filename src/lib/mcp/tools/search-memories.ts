@@ -29,11 +29,13 @@ export default defineTool({
   annotations: { readOnlyHint: true, openWorldHint: false },
   handler: async ({ query, limit }, ctx) => {
     if (!ctx.isAuthenticated()) return notAuthed();
+    const userId = ctx.getUserId();
+    if (!userId) return notAuthed();
     const supabase = supabaseForUser(ctx);
     try {
       const vec = await embed(query);
       const { data, error } = await supabase.rpc("match_vault_items", {
-        _owner: ctx.getUserId(),
+        _owner: userId,
         query_embedding: vec as unknown as string,
         match_count: limit ?? 10,
       });
