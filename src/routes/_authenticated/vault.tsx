@@ -2,12 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
   Camera, Video, FileText, Award, StickyNote, Mic, Upload, Trash2, Plus,
-  Loader2, Play, Download, X, Languages, Pencil, Check,
+  Loader2, Play, Download, X, Languages, Pencil, Check, Search, Sparkles,
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { embedItems, searchMemories } from "@/lib/search.functions";
 
 type ItemType = Database["public"]["Enums"]["item_type"];
 type Item = Database["public"]["Tables"]["vault_items"]["Row"];
