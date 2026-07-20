@@ -19,6 +19,7 @@ import { Route as AuthenticatedLegacyRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedFamilyRouteImport } from './routes/_authenticated/family'
 import { Route as ApiPublicTranscribeRouteImport } from './routes/api/public/transcribe'
 import { Route as AuthenticatedMemorialOwnerIdRouteImport } from './routes/_authenticated/memorial.$ownerId'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -70,6 +71,11 @@ const AuthenticatedMemorialOwnerIdRoute =
     path: '/memorial/$ownerId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/legacy': typeof AuthenticatedLegacyRoute
   '/vault': typeof AuthenticatedVaultRoute
   '/verify': typeof AuthenticatedVerifyRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/memorial/$ownerId': typeof AuthenticatedMemorialOwnerIdRoute
   '/api/public/transcribe': typeof ApiPublicTranscribeRoute
 }
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/legacy': typeof AuthenticatedLegacyRoute
   '/vault': typeof AuthenticatedVaultRoute
   '/verify': typeof AuthenticatedVerifyRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/memorial/$ownerId': typeof AuthenticatedMemorialOwnerIdRoute
   '/api/public/transcribe': typeof ApiPublicTranscribeRoute
 }
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/_authenticated/legacy': typeof AuthenticatedLegacyRoute
   '/_authenticated/vault': typeof AuthenticatedVaultRoute
   '/_authenticated/verify': typeof AuthenticatedVerifyRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/memorial/$ownerId': typeof AuthenticatedMemorialOwnerIdRoute
   '/api/public/transcribe': typeof ApiPublicTranscribeRoute
 }
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/legacy'
     | '/vault'
     | '/verify'
+    | '/.lovable/oauth/consent'
     | '/memorial/$ownerId'
     | '/api/public/transcribe'
   fileRoutesByTo: FileRoutesByTo
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/legacy'
     | '/vault'
     | '/verify'
+    | '/.lovable/oauth/consent'
     | '/memorial/$ownerId'
     | '/api/public/transcribe'
   id:
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/_authenticated/legacy'
     | '/_authenticated/vault'
     | '/_authenticated/verify'
+    | '/.lovable/oauth/consent'
     | '/_authenticated/memorial/$ownerId'
     | '/api/public/transcribe'
   fileRoutesById: FileRoutesById
@@ -148,6 +160,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicTranscribeRoute: typeof ApiPublicTranscribeRoute
 }
 
@@ -223,6 +236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMemorialOwnerIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -250,6 +270,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicTranscribeRoute: ApiPublicTranscribeRoute,
 }
 export const routeTree = rootRouteImport
