@@ -148,7 +148,7 @@ function VaultPage() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder='Ask your vault — e.g. "graduation photos" or "grandma\'s recipe"'
+            placeholder={`Ask your vault — e.g. "graduation photos" or "grandma's recipe"`}
             className="w-full bg-transparent py-3 pl-10 pr-32 text-sm outline-none placeholder:text-muted-foreground/70"
           />
           <div className="absolute right-2 flex items-center gap-1">
