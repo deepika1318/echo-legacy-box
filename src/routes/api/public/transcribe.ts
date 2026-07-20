@@ -1,16 +1,46 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createClient } from "@supabase/supabase-js";
 
-// Transcribe audio via Lovable AI. Public route: no auth header needed
-// because transcription is a stateless model call, not user data.
+// Transcribe audio via Lovable AI. Requires a valid signed-in Supabase session
+// (bearer token) to prevent unauthenticated abuse of the paid AI transcription API.
 export const Route = createFileRoute("/api/public/transcribe")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         try {
           const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
-          if (!LOVABLE_API_KEY) {
-            return new Response(JSON.stringify({ error: "AI not configured" }), { status: 500 });
+          const SUPABASE_URL = process.env.SUPABASE_URL;
+          const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
+          if (!LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+            return new Response(JSON.stringify({ error: "Server not configured" }), { status: 500 });
           }
+
+          // Require a valid Supabase session bearer token.
+          const authHeader = request.headers.get("authorization") || request.headers.get("Authorization");
+          const token = authHeader?.toLowerCase().startsWith("bearer ")
+            ? authHeader.slice(7).trim()
+            : "";
+          if (!token) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+          }
+          const authClient = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+            auth: { persistSession: false, autoRefreshToken: false },
+            global: {
+              fetch: (input, init) => {
+                const h = new Headers(init?.headers);
+                if (SUPABASE_PUBLISHABLE_KEY.startsWith("sb_") && h.get("Authorization") === `Bearer ${SUPABASE_PUBLISHABLE_KEY}`) {
+                  h.delete("Authorization");
+                }
+                h.set("apikey", SUPABASE_PUBLISHABLE_KEY);
+                return fetch(input, { ...init, headers: h });
+              },
+            },
+          });
+          const { data: userData, error: userErr } = await authClient.auth.getUser(token);
+          if (userErr || !userData?.user) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+          }
+
           const form = await request.formData();
           const file = form.get("file");
           if (!(file instanceof File)) {
@@ -28,7 +58,6 @@ export const Route = createFileRoute("/api/public/transcribe")({
           const upstream = new FormData();
           upstream.append("model", "openai/gpt-4o-transcribe");
           upstream.append("file", file, "recording.wav");
-          // Only forward well-formed ISO-639-1 codes (2 letters); "auto" or empty = auto-detect
           if (/^[a-z]{2}$/i.test(language)) {
             upstream.append("language", language.toLowerCase());
           }
