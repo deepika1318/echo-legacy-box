@@ -337,6 +337,7 @@ function Viewer({ item, url, onClose }: { item: Item; url: string; onClose: () =
   const [saving, setSaving] = useState(false);
   const hasAudio = item.item_type === "voice" && !!item.storage_path;
 
+  const reembed = useServerFn(embedItems);
   async function saveTranscript() {
     setSaving(true);
     try {
@@ -345,6 +346,7 @@ function Viewer({ item, url, onClose }: { item: Item; url: string; onClose: () =
         .update({ transcript: draft.trim() || null })
         .eq("id", item.id);
       if (error) throw error;
+      reembed({ data: { itemId: item.id } }).catch(() => {});
       toast.success("Transcript updated");
       setEditing(false);
       qc.invalidateQueries({ queryKey: ["vault_items"] });
