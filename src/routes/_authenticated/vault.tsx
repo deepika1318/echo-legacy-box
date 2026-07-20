@@ -457,7 +457,7 @@ function UploadDialog({
         size_bytes = file.size;
       }
 
-      const { error } = await supabase.from("vault_items").insert({
+      const { data: inserted, error } = await supabase.from("vault_items").insert({
         owner_id: u.user.id,
         item_type: type,
         title: title.trim() || file?.name || "Untitled",
@@ -466,8 +466,9 @@ function UploadDialog({
         mime_type,
         size_bytes,
         transcript,
-      });
+      }).select("id").single();
       if (error) throw error;
+      if (inserted?.id) embedOne({ data: { itemId: inserted.id } }).catch(() => {});
       toast.success("Saved to your vault");
       onDone();
     } catch (e) {
