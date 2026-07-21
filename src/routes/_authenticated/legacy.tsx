@@ -319,7 +319,7 @@ function LegacyPage() {
                       <UserCheck className="size-3" /> Vouched
                     </span>
                   )}
-                  <button onClick={() => removeContact(c.id)} className="rounded-md p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
+                  <button onClick={() => removeContact(c.id)} aria-label="Remove trusted contact" className="rounded-md p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
                     <Trash2 className="size-4" />
                   </button>
                 </div>

@@ -153,7 +153,7 @@ function VaultPage() {
           />
           <div className="absolute right-2 flex items-center gap-1">
             {matches && (
-              <button type="button" onClick={clearSearch} className="rounded-md p-1.5 text-muted-foreground hover:bg-accent" title="Clear">
+              <button type="button" onClick={clearSearch} aria-label="Clear search" className="rounded-md p-1.5 text-muted-foreground hover:bg-accent" title="Clear">
                 <X className="size-4" />
               </button>
             )}
@@ -311,11 +311,11 @@ function ItemCard({ item, onDelete }: { item: Item; onDelete: () => void }) {
             <span>{new Date(item.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</span>
             <div className="flex gap-1">
               {(url || item.item_type === "voice" || item.item_type === "note") && (
-                <button onClick={() => setViewer(true)} className="rounded-md p-1.5 hover:bg-accent" title="Open">
+                <button onClick={() => setViewer(true)} aria-label="Open memory" className="rounded-md p-1.5 hover:bg-accent" title="Open">
                   {item.item_type === "video" || item.item_type === "voice" ? <Play className="size-4" /> : item.item_type === "note" ? <Pencil className="size-4" /> : <Download className="size-4" />}
                 </button>
               )}
-              <button onClick={onDelete} className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" title="Remove">
+              <button onClick={onDelete} aria-label="Remove memory" className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" title="Remove">
                 <Trash2 className="size-4" />
               </button>
             </div>
@@ -360,7 +360,7 @@ function Viewer({ item, url, onClose }: { item: Item; url: string; onClose: () =
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="relative max-h-[90vh] w-full max-w-3xl overflow-auto rounded-2xl bg-card p-6" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute right-3 top-3 rounded-md p-1.5 hover:bg-accent"><X className="size-4" /></button>
+        <button onClick={onClose} aria-label="Close" className="absolute right-3 top-3 rounded-md p-1.5 hover:bg-accent"><X className="size-4" /></button>
         <h2 className="font-serif text-2xl">{item.title}</h2>
         {item.description && <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>}
         <div className="mt-4">
@@ -483,7 +483,7 @@ function UploadDialog({
       <div className="w-full max-w-lg rounded-2xl bg-card p-6 shadow-[var(--shadow-keepsake)]" onClick={(e) => e.stopPropagation()}>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 font-serif text-2xl text-primary">{meta.icon} Add {meta.label.toLowerCase().slice(0, -1)}</h2>
-          <button onClick={onClose} className="rounded-md p-1.5 hover:bg-accent"><X className="size-4" /></button>
+          <button onClick={onClose} aria-label="Close" className="rounded-md p-1.5 hover:bg-accent"><X className="size-4" /></button>
         </div>
 
         {type === "voice" ? (
@@ -649,6 +649,7 @@ function VoiceRecorder({ onCapture }: { onCapture: (file: File, transcript: stri
       <button
         onClick={recording ? stop : start}
         disabled={processing}
+        aria-label={recording ? "Stop recording" : "Record voice note"}
         className={`inline-flex size-20 items-center justify-center rounded-full text-primary-foreground shadow-[var(--shadow-keepsake)] transition ${
           recording ? "animate-pulse bg-destructive" : "bg-[var(--gradient-gold)]"
         }`}

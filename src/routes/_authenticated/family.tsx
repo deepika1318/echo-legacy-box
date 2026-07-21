@@ -140,7 +140,7 @@ function FamilyPage() {
                         {m.family_email}{m.relationship ? ` • ${m.relationship}` : ""}
                       </p>
                     </div>
-                    <button onClick={() => remove(m.id)} className="rounded-md p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
+                    <button onClick={() => remove(m.id)} aria-label="Remove family member" className="rounded-md p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
                       <Trash2 className="size-4" />
                     </button>
                   </div>
