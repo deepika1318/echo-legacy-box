@@ -67,16 +67,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AI Digital Vault — Preserve every memory for the ones you love" },
+      { title: "AI Digital Vault — Preserve memories for your family" },
       { name: "description", content: "A private digital keepsake for photos, videos, files, certificates, and voice notes — released to your family when the time comes." },
-      { property: "og:title", content: "AI Digital Vault — Preserve every memory for the ones you love" },
-      { property: "og:description", content: "A private digital keepsake for photos, videos, files, certificates, and voice notes — released to your family when the time comes." },
+      { property: "og:site_name", content: "AI Digital Vault" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "AI Digital Vault — Preserve every memory for the ones you love" },
-      { name: "twitter:description", content: "A private digital keepsake for photos, videos, files, certificates, and voice notes — released to your family when the time comes." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/03bc5238-1356-4e29-bc83-062879cc2406/id-preview-3a2e08e8--e9b4d85e-516f-4cd7-8608-c54a233b6346.lovable.app-1784353669833.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/03bc5238-1356-4e29-bc83-062879cc2406/id-preview-3a2e08e8--e9b4d85e-516f-4cd7-8608-c54a233b6346.lovable.app-1784353669833.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -84,6 +79,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "AI Digital Vault",
+          url: "https://echo-legacy-box.lovable.app",
+          description: "A private digital keepsake for photos, videos, files, certificates, and voice notes — released to your family when the time comes.",
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "AI Digital Vault",
+          url: "https://echo-legacy-box.lovable.app",
+        }),
+      },
     ],
   }),
   shellComponent: RootShell,

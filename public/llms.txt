@@ -1,0 +1,10 @@
+# AI Digital Vault
+
+> A private digital keepsake for photos, videos, files, certificates, and voice notes — released gently to your family when the time comes.
+
+AI Digital Vault helps a person preserve their memories and important documents in one private place, then release them to designated family members through a legacy-unlock process (trusted-contact quorum or verified certificate).
+
+## Pages
+
+- [Home](/): Overview of the vault, features, and how the legacy unlock works.
+- [Sign in / Create a vault](/auth): Sign in or create a new personal vault account.

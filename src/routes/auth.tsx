@@ -9,6 +9,17 @@ export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>) => ({
     next: typeof s.next === "string" ? s.next : undefined,
   }),
+  head: () => ({
+    meta: [
+      { title: "Sign in or create your vault — AI Digital Vault" },
+      { name: "description", content: "Sign in to your AI Digital Vault, create a new personal vault, or reset your password." },
+      { property: "og:title", content: "Sign in or create your vault — AI Digital Vault" },
+      { property: "og:description", content: "Sign in to your AI Digital Vault, create a new personal vault, or reset your password." },
+      { property: "og:url", content: "https://echo-legacy-box.lovable.app/auth" },
+      { property: "og:type", content: "website" },
+    ],
+    links: [{ rel: "canonical", href: "https://echo-legacy-box.lovable.app/auth" }],
+  }),
   component: AuthPage,
 });
 
@@ -94,7 +105,7 @@ function AuthPage() {
       : "Enter the email on your account and we'll send you a reset link.";
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+    <main className="flex min-h-screen items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <Link to="/" className="mb-8 flex items-center justify-center gap-2">
           <div className="grid size-10 place-items-center rounded-full bg-[var(--gradient-gold)] text-gold-foreground shadow-[var(--shadow-soft)]">
@@ -185,7 +196,7 @@ function AuthPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 

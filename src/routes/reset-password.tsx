@@ -5,6 +5,18 @@ import { Heart } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/reset-password")({
+  head: () => ({
+    meta: [
+      { title: "Reset your password — AI Digital Vault" },
+      { name: "description", content: "Set a new password for your AI Digital Vault account using the reset link sent to your email." },
+      { name: "robots", content: "noindex" },
+      { property: "og:title", content: "Reset your password — AI Digital Vault" },
+      { property: "og:description", content: "Set a new password for your AI Digital Vault account." },
+      { property: "og:url", content: "https://echo-legacy-box.lovable.app/reset-password" },
+      { property: "og:type", content: "website" },
+    ],
+    links: [{ rel: "canonical", href: "https://echo-legacy-box.lovable.app/reset-password" }],
+  }),
   component: ResetPasswordPage,
 });
 
@@ -42,7 +54,7 @@ function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+    <main className="flex min-h-screen items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <Link to="/" className="mb-8 flex items-center justify-center gap-2">
           <div className="grid size-10 place-items-center rounded-full bg-[var(--gradient-gold)] text-gold-foreground shadow-[var(--shadow-soft)]">
