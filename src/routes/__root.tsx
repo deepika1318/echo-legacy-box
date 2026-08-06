@@ -69,7 +69,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "AI Digital Vault — Preserve memories for your family" },
       { name: "description", content: "A private digital keepsake for photos, videos, files, certificates, and voice notes — released to your family when the time comes." },
-      { name: "google-site-verification", content: "gGxybr-27Hf1btEQSwB3MuaspiCWCHe6Qy_P2zi1kjU" },
+      { name: "google-site-verification", content: "gGxybr-27Hf1btEQsWb3MuaspiCWCHe6Qy_P2zi1kjU" },
       { property: "og:site_name", content: "AI Digital Vault" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
